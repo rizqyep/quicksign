@@ -1,52 +1,70 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/go-gomail/gomail"
+	"github.com/joho/godotenv"
 )
 
-const CONFIG_SMTP_HOST = "smtp.gmail.com"
-const CONFIG_SMTP_PORT = 587
-const CONFIG_SENDER_NAME = "jongdigitalid@gmail.com"
-const CONFIG_AUTH_EMAIL = "jongdigitalid@gmail.com"
-const CONFIG_AUTH_PASSWORD = "wggb hkzm glnv rttf"
+type SignatureMailPayload struct {
+	RequesterEmail string
+	RequesterName  string
+	QrCodeToken    string
+}
 
-func SendSignatureMail() {
+func SendSignatureMail(payload SignatureMailPayload) {
+	err := godotenv.Load("config/.env")
+	if err != nil {
+		fmt.Println("failed load file environment")
+	} else {
+		fmt.Println("successfully read file environment")
+	}
 
+	//Temporarily Create QR Code file to send later
 	qrCodeUrl := "https://chart.apis.google.com/chart?cht=qr&chs=300x300&chl="
-
-	qrCodeUrl += "abccdderff"
-
-	err := DownloadFile("qrcode.png", qrCodeUrl)
+	qrCodeUrl += payload.QrCodeToken
+	err = DownloadFile("signature.png", qrCodeUrl)
 	if err != nil {
 		panic(err)
 	}
 
+	//Configure Email Properties
 	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", CONFIG_SENDER_NAME)
-	mailer.SetHeader("To", "rizqyepr@gmail.com")
+	mailer.SetHeader("From", os.Getenv("CONFIG_SENDER_NAME"))
+	mailer.SetHeader("To", payload.RequesterEmail)
 	mailer.SetHeader("Subject", "Test mail")
-	mailer.SetBody("text/html", "Hello, <b>have a nice day</b>")
-	mailer.Attach("./qrcode.png")
+	emailBody := fmt.Sprintf("Hello, <b>%s</b> <br> Your signature request has been accepted", payload.RequesterName)
+	mailer.SetBody("text/html", emailBody)
+	mailer.Attach("./signature.png")
 
+	CONFIG_SMTP_PORT, err := strconv.Atoi(os.Getenv("CONFIG_SMTP_PORT"))
+	if err != nil {
+		log.Println("Error fetching env for mailer")
+	}
+	// Prepare dialer as an actor to send email
 	dialer := gomail.NewDialer(
-		CONFIG_SMTP_HOST,
+		os.Getenv("CONFIG_SMTP_HOST"),
 		CONFIG_SMTP_PORT,
-		CONFIG_AUTH_EMAIL,
-		CONFIG_AUTH_PASSWORD,
+		os.Getenv("CONFIG_AUTH_EMAIL"),
+		os.Getenv("CONFIG_AUTH_PASSWORD"),
 	)
 
 	err = dialer.DialAndSend(mailer)
+
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	err = os.Remove("qrcode.png")
-	log.Println("Mail sent!")
+	err = os.Remove("signature.png")
+	if err != nil {
+		log.Printf("Error Removing Temp File!")
+	}
 
 }
 
