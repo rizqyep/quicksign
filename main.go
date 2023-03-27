@@ -7,6 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/rizqyep/quicksign/database"
+	"github.com/rizqyep/quicksign/routers"
 )
 
 func main() {
