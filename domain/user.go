@@ -1,5 +1,7 @@
 package domain
 
+import "golang.org/x/crypto/bcrypt"
+
 type User struct {
 	ID        int    `json:"id"`
 	FirstName string `json:"first_name"`
@@ -11,12 +13,15 @@ type User struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-func (u *User) ValidateRegistrationRequest() (bool, map[string]string) {
-	errors := make(map[string]string)
-
-	if len(errors) != 0 {
-		return false, errors
+func (u *User) HashPassword() {
+	bytePassword := []byte(u.Password)
+	hashedPassword, err := bcrypt.GenerateFromPassword(bytePassword, bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
 	}
+	u.Password = string(hashedPassword)
+}
 
-	return true, errors
+func (u *User) HidePassword() {
+	u.Password = ""
 }

@@ -2,12 +2,15 @@ package controllers
 
 import (
 	"sync"
+
+	"github.com/rizqyep/quicksign/services"
 )
 
 type controllersPool struct {
+	UserController
 }
 
-// var serviceInstance = services.InitServiceInstance()
+var serviceInstance = services.InitServiceInstance()
 var controllerInstance *controllersPool
 var once sync.Once
 
@@ -19,5 +22,7 @@ func InitControllerInstance() *controllersPool {
 }
 
 func NewControllerInstance() *controllersPool {
-	return &controllersPool{}
+	return &controllersPool{
+		UserController: NewUserController(serviceInstance.UserService),
+	}
 }

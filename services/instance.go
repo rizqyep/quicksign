@@ -7,9 +7,11 @@ import (
 )
 
 type servicesPool struct {
+	UserService
+	ResetPasswordService
 }
 
-var repositoryInstance = repository.NewRepository()
+var repositoryInstance = repository.InitRepository()
 var serviceInstance *servicesPool
 var once sync.Once
 
@@ -21,5 +23,8 @@ func InitServiceInstance() *servicesPool {
 }
 
 func NewServiceInstance() *servicesPool {
-	return &servicesPool{}
+	return &servicesPool{
+		UserService:          NewUserService(repositoryInstance.UserRepository),
+		ResetPasswordService: NewResetPasswordService(repositoryInstance.UserRepository, repositoryInstance.ResetPasswordTokenRepository),
+	}
 }
