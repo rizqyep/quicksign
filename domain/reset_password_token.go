@@ -1,12 +1,14 @@
 package domain
 
+import "time"
+
 type ResetPasswordToken struct {
-	ID        int    `json:"id"`
-	Token     string `json:"token"`
-	Email     string `json:"email"`
-	Valid     bool   `json:"valid"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID        int       `json:"id"`
+	Token     string    `json:"token"`
+	Email     string    `json:"email"`
+	Valid     bool      `json:"valid"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type UpdatePasswordRequest struct {

@@ -15,7 +15,7 @@ import (
 type SignatureMailPayload struct {
 	RequesterEmail string
 	RequesterName  string
-	QrCodeToken    string
+	QrCodeUrl      string
 }
 
 type ResetPasswordMailPayload struct {
@@ -32,9 +32,8 @@ func SendSignatureMail(payload SignatureMailPayload) {
 	}
 
 	//Temporarily Create QR Code file to send later
-	qrCodeUrl := "https://chart.apis.google.com/chart?cht=qr&chs=300x300&chl="
-	qrCodeUrl += payload.QrCodeToken
-	err = DownloadFile("signature.png", qrCodeUrl)
+
+	err = DownloadFile("signature.png", payload.QrCodeUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -81,13 +80,13 @@ func SendResetPasswordLink(payload ResetPasswordMailPayload) {
 		fmt.Println("successfully read file environment")
 	}
 
-	resetPasswordLink := os.Getenv("URL") + fmt.Sprintf("/%s", payload.Token)
+	resetPasswordLink := os.Getenv("URL") + fmt.Sprintf("/reset-password/%s", payload.Token)
 	//Configure Email Properties
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", os.Getenv("CONFIG_SENDER_NAME"))
 	mailer.SetHeader("To", payload.Email)
 	mailer.SetHeader("Subject", "Reset Your Password")
-	emailBody := fmt.Sprintf("Hello! <br> We have received a request to reset your password <br> Please kindly access this link <a href='%s'>%s</a>", resetPasswordLink, resetPasswordLink)
+	emailBody := fmt.Sprintf("Hello! <br> We have received a request to reset your password <br> Please kindly access this link : <a href='%s'>%s</a> to reset your password", resetPasswordLink, resetPasswordLink)
 	mailer.SetBody("text/html", emailBody)
 
 	CONFIG_SMTP_PORT, err := strconv.Atoi(os.Getenv("CONFIG_SMTP_PORT"))

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/rizqyep/quicksign/domain"
@@ -30,7 +29,7 @@ func (service *userService) Register(user domain.User) domain.ServiceResponse {
 
 	if err != nil {
 		return domain.ServiceResponse{
-			Error:      err,
+			Error:      err.Error(),
 			StatusCode: 500,
 			Data:       map[string]interface{}{},
 		}
@@ -39,14 +38,14 @@ func (service *userService) Register(user domain.User) domain.ServiceResponse {
 	token, err := utils.CreateJWTToken(&result)
 	if err != nil {
 		return domain.ServiceResponse{
-			Error:      err,
+			Error:      err.Error(),
 			StatusCode: 500,
 			Data:       map[string]interface{}{},
 		}
 	}
 
 	return domain.ServiceResponse{
-		Error:      nil,
+		Error:      "",
 		StatusCode: 201,
 		Data: map[string]interface{}{
 			"user":  result,
@@ -62,14 +61,14 @@ func (service *userService) LogIn(user domain.User) domain.ServiceResponse {
 
 	if err != nil {
 		return domain.ServiceResponse{
-			Error:      err,
+			Error:      err.Error(),
 			StatusCode: 500,
 			Data:       map[string]interface{}{},
 		}
 	}
 	if result == (domain.User{}) {
 		return domain.ServiceResponse{
-			Error:      errors.New("Invalid Credentials"),
+			Error:      "Invalid Credentials",
 			StatusCode: 400,
 			Data:       map[string]interface{}{},
 		}
@@ -79,7 +78,7 @@ func (service *userService) LogIn(user domain.User) domain.ServiceResponse {
 	if err != nil {
 		fmt.Println(err)
 		return domain.ServiceResponse{
-			Error:      errors.New("invalid credentials"),
+			Error:      "Invalid Credentials",
 			StatusCode: 401,
 			Data:       map[string]interface{}{},
 		}
@@ -88,14 +87,14 @@ func (service *userService) LogIn(user domain.User) domain.ServiceResponse {
 
 	if err != nil {
 		return domain.ServiceResponse{
-			Error:      err,
+			Error:      err.Error(),
 			StatusCode: 500,
 			Data:       map[string]interface{}{},
 		}
 	}
 	result.HidePassword()
 	return domain.ServiceResponse{
-		Error:      nil,
+		Error:      "",
 		StatusCode: 201,
 		Data: map[string]interface{}{
 			"user":  result,

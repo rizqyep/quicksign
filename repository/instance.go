@@ -5,6 +5,8 @@ import "sync"
 type repositoryPool struct {
 	UserRepository
 	ResetPasswordTokenRepository
+	SignatureRepository
+	SignatureRequestRepository
 }
 
 var repositoryInstance *repositoryPool
@@ -14,7 +16,10 @@ func NewRepository() *repositoryPool {
 	return &repositoryPool{
 		UserRepository:               NewUserRepository(),
 		ResetPasswordTokenRepository: NewResetPasswordTokenRepository(),
+		SignatureRepository:          NewSignatureRepository(),
+		SignatureRequestRepository:   NewSignatureRequestRepository(),
 	}
+
 }
 
 func InitRepository() *repositoryPool {

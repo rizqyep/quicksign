@@ -41,7 +41,7 @@ func (controller *userController) Register(c *gin.Context) {
 
 	result := controller.service.Register(user)
 
-	if result.Error != nil {
+	if result.Error != "" {
 		c.AbortWithStatusJSON(result.StatusCode, gin.H{
 			"error":   result.Error,
 			"message": "Something went wrong",
@@ -73,7 +73,7 @@ func (controller *userController) LogIn(c *gin.Context) {
 
 	result := controller.service.LogIn(user)
 
-	if result.Error != nil {
+	if result.Error != "" {
 		c.AbortWithStatusJSON(result.StatusCode, gin.H{
 			"error":   result.Error,
 			"message": "Something went wrong",

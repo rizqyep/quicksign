@@ -8,6 +8,8 @@ import (
 
 type controllersPool struct {
 	UserController
+	ResetPasswordController
+	SignatureController
 }
 
 var serviceInstance = services.InitServiceInstance()
@@ -23,6 +25,8 @@ func InitControllerInstance() *controllersPool {
 
 func NewControllerInstance() *controllersPool {
 	return &controllersPool{
-		UserController: NewUserController(serviceInstance.UserService),
+		UserController:          NewUserController(serviceInstance.UserService),
+		ResetPasswordController: NewResetPasswordController(serviceInstance.ResetPasswordService),
+		SignatureController:     NewSignatureController(serviceInstance.SignatureService),
 	}
 }
