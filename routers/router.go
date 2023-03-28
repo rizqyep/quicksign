@@ -33,7 +33,7 @@ func RouteHandlers(r *gin.Engine) {
 	signatureRequests.Use(middleware.JwtAuthMiddleware())
 	signatureRequests.GET("/", controllerInstance.SignatureRequestController.GetAll)
 	signatureRequests.GET("/:id", controllerInstance.SignatureRequestController.GetOne)
-	signatureRequests.PUT("/approval", controllerInstance.SignatureRequestController.ApproveOrReject)
+	signatureRequests.PUT("/approval/:id", controllerInstance.SignatureRequestController.ApproveOrReject)
 
 	r.GET("/test-token", middleware.JwtAuthMiddleware(), func(ctx *gin.Context) {
 		userId, _ := ctx.Get("x-user-id")

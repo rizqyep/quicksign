@@ -30,6 +30,8 @@ func NewSignatureRequestController(service services.SignatureRequestService) Sig
 func (controller *signatureRequestController) Create(c *gin.Context) {
 	var request domain.RequestSignatureRequest
 	c.ShouldBindJSON(&request)
+
+	fmt.Println(request)
 	isValid, errors := request.ValidateRequest()
 
 	username := c.Param("username")

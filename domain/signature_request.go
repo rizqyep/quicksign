@@ -9,7 +9,7 @@ type SignatureRequest struct {
 	ID             int       `json:"id"`
 	RequesterEmail string    `json:"requester_email"`
 	RequesterName  string    `json:"requester_name"`
-	Description    string    `json:"requester_description"`
+	Description    string    `json:"description"`
 	ApproverID     int       `json:"approver_id"`
 	Status         string    `json:"status"`
 	CreatedAt      time.Time `json:"created_at"`

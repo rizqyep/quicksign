@@ -47,7 +47,7 @@ func (service *signatureRequestService) Create(request domain.RequestSignatureRe
 			Data:       map[string]interface{}{},
 		}
 	}
-
+	request.ApproverID = userResult.ID
 	result, err := service.repository.Create(request.SignatureRequest)
 
 	if err != nil {
@@ -130,22 +130,21 @@ func (service *signatureRequestService) ApproveOrReject(user_id int, request dom
 			Data:       map[string]interface{}{},
 		}
 	}
-	err = service.repository.UpdateStatus(request.SignatureRequest)
-	if err != nil {
+
+	if result.Status != "PENDING" {
 		return domain.ServiceResponse{
-			StatusCode: 500,
-			Error:      err.Error(),
+			StatusCode: 400,
+			Error:      "You already approved / rejected this application previously",
 			Data:       map[string]interface{}{},
 		}
 	}
-
 	// Additional Action for Approved Request
 	if request.Status == "APPROVED" {
 		var newSignatureRequest domain.Signature
 		if request.OverrideDescription {
 			newSignatureRequest.Description = request.NewDescription
 		} else {
-			newSignatureRequest.Description = request.Description
+			newSignatureRequest.Description = result.Description
 		}
 		signature, err := service.signatureRepository.Create(newSignatureRequest)
 
@@ -173,6 +172,15 @@ func (service *signatureRequestService) ApproveOrReject(user_id int, request dom
 		}
 	}
 
+	//Inform rejected via email to requester
+	mailPayload := utils.RejectedSignatureMailPayload{
+		RequesterEmail: result.RequesterEmail,
+		RequesterName:  result.RequesterName,
+		Description:    result.Description,
+	}
+	//Call with go routine to un-block request process
+	go utils.SendRejectedSignatureMail(mailPayload)
+
 	// Update Request status
 	err = service.repository.UpdateStatus(request.SignatureRequest)
 	if err != nil {
@@ -182,15 +190,6 @@ func (service *signatureRequestService) ApproveOrReject(user_id int, request dom
 			Data:       map[string]interface{}{},
 		}
 	}
-
-	//Inform rejected via email to requester
-	mailPayload := utils.RejectedSignatureMailPayload{
-		RequesterEmail: request.RequesterEmail,
-		RequesterName:  request.RequesterName,
-		Description:    request.Description,
-	}
-	//Call with go routine to un-block request process
-	go utils.SendRejectedSignatureMail(mailPayload)
 
 	return domain.ServiceResponse{
 		Error:                 "",

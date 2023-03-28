@@ -10,6 +10,7 @@ type controllersPool struct {
 	UserController
 	ResetPasswordController
 	SignatureController
+	SignatureRequestController
 }
 
 var serviceInstance = services.InitServiceInstance()
@@ -25,8 +26,9 @@ func InitControllerInstance() *controllersPool {
 
 func NewControllerInstance() *controllersPool {
 	return &controllersPool{
-		UserController:          NewUserController(serviceInstance.UserService),
-		ResetPasswordController: NewResetPasswordController(serviceInstance.ResetPasswordService),
-		SignatureController:     NewSignatureController(serviceInstance.SignatureService),
+		UserController:             NewUserController(serviceInstance.UserService),
+		ResetPasswordController:    NewResetPasswordController(serviceInstance.ResetPasswordService),
+		SignatureController:        NewSignatureController(serviceInstance.SignatureService),
+		SignatureRequestController: NewSignatureRequestController(serviceInstance.SignatureRequestService),
 	}
 }
