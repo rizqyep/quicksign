@@ -18,6 +18,12 @@ type SignatureMailPayload struct {
 	QrCodeUrl      string
 }
 
+type RejectedSignatureMailPayload struct {
+	RequesterEmail string
+	RequesterName  string
+	Description    string
+}
+
 type ResetPasswordMailPayload struct {
 	Email string
 	Token string
@@ -70,6 +76,41 @@ func SendSignatureMail(payload SignatureMailPayload) {
 		log.Printf("Error Removing Temp File!")
 	}
 
+}
+
+func SendRejectedSignatureMail(payload RejectedSignatureMailPayload) {
+	err := godotenv.Load("config/.env")
+	if err != nil {
+		fmt.Println("failed load file environment")
+	} else {
+		fmt.Println("successfully read file environment")
+	}
+
+	//Configure Email Properties
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", os.Getenv("CONFIG_SENDER_NAME"))
+	mailer.SetHeader("To", payload.RequesterEmail)
+	mailer.SetHeader("Subject", "Reset Your Password")
+	emailBody := fmt.Sprintf("Hello, %s ! <br> We are sorry to inform that your signature request for '%s' has been rejected", payload.RequesterName, payload.Description)
+	mailer.SetBody("text/html", emailBody)
+
+	CONFIG_SMTP_PORT, err := strconv.Atoi(os.Getenv("CONFIG_SMTP_PORT"))
+	if err != nil {
+		log.Println("Error fetching env for mailer")
+	}
+	// Prepare dialer as an actor to send email
+	dialer := gomail.NewDialer(
+		os.Getenv("CONFIG_SMTP_HOST"),
+		CONFIG_SMTP_PORT,
+		os.Getenv("CONFIG_AUTH_EMAIL"),
+		os.Getenv("CONFIG_AUTH_PASSWORD"),
+	)
+
+	err = dialer.DialAndSend(mailer)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
 
 func SendResetPasswordLink(payload ResetPasswordMailPayload) {

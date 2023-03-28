@@ -27,6 +27,14 @@ func RouteHandlers(r *gin.Engine) {
 	signatures.PUT("/:id", controllerInstance.SignatureController.Update)
 	signatures.DELETE("/:id", controllerInstance.SignatureController.Delete)
 
+	signatureRequests := r.Group("/signature-requests")
+	signatureRequests.POST("/:username", controllerInstance.SignatureRequestController.Create)
+
+	signatureRequests.Use(middleware.JwtAuthMiddleware())
+	signatureRequests.GET("/", controllerInstance.SignatureRequestController.GetAll)
+	signatureRequests.GET("/:id", controllerInstance.SignatureRequestController.GetOne)
+	signatureRequests.PUT("/approval", controllerInstance.SignatureRequestController.ApproveOrReject)
+
 	r.GET("/test-token", middleware.JwtAuthMiddleware(), func(ctx *gin.Context) {
 		userId, _ := ctx.Get("x-user-id")
 		userName, _ := ctx.Get("x-user-username")

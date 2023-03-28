@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"net/mail"
+	"time"
+)
 
 type SignatureRequest struct {
 	ID             int       `json:"id"`
@@ -14,13 +17,43 @@ type SignatureRequest struct {
 }
 
 type RequestSignatureRequest struct {
-	SignatureRequest SignatureRequest
-	Username         string
+	SignatureRequest
+	Username string `json:"username"`
 }
 
-type SingatureRequestApprovalRequest struct {
-	Signature           Signature
-	SignatureRequest    SignatureRequest
-	OverrideDescription bool
-	NewDescription      string
+type SignatureRequestApprovalRequest struct {
+	SignatureRequest
+	OverrideDescription bool   `json:"override_description"`
+	NewDescription      string `json:"new_description"`
+}
+
+func (r *RequestSignatureRequest) ValidateRequest() (bool, map[string]string) {
+	errors := make(map[string]string)
+
+	if r.Description == "" {
+		errors["description"] = "Description should not be empty"
+	}
+
+	_, err := mail.ParseAddress(r.RequesterEmail)
+
+	if err != nil {
+		errors["email"] = "Email should be a valid email format!"
+	}
+
+	if r.RequesterName == "" {
+		errors["requester_name"] = "Requester name should not be empty!"
+	}
+
+	return len(errors) == 0, errors
+}
+
+func (r *SignatureRequestApprovalRequest) ValidateRequest() (bool, map[string]string) {
+	errors := make(map[string]string)
+
+	if r.OverrideDescription == true {
+		if r.NewDescription == "" {
+			errors["new_description"] = "New description should be filled!"
+		}
+	}
+	return len(errors) == 0, errors
 }

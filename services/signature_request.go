@@ -10,7 +10,7 @@ type SignatureRequestService interface {
 	Create(request domain.RequestSignatureRequest) domain.ServiceResponse
 	GetAll(user_id int) domain.ServiceResponse
 	GetOne(user_id int, request domain.SignatureRequest) domain.ServiceResponse
-	ApproveOrReject(user_id int, request domain.SingatureRequestApprovalRequest) domain.ServiceResponse
+	ApproveOrReject(user_id int, request domain.SignatureRequestApprovalRequest) domain.ServiceResponse
 }
 
 type signatureRequestService struct {
@@ -113,7 +113,8 @@ func (service *signatureRequestService) GetOne(user_id int, request domain.Signa
 
 }
 
-func (service *signatureRequestService) ApproveOrReject(user_id int, request domain.SingatureRequestApprovalRequest) domain.ServiceResponse {
+func (service *signatureRequestService) ApproveOrReject(user_id int, request domain.SignatureRequestApprovalRequest) domain.ServiceResponse {
+
 	result, err := service.repository.GetOne(request.SignatureRequest)
 	if err != nil {
 		return domain.ServiceResponse{
@@ -137,10 +138,14 @@ func (service *signatureRequestService) ApproveOrReject(user_id int, request dom
 			Data:       map[string]interface{}{},
 		}
 	}
-	if request.SignatureRequest.Status == "APPROVED" {
-		var newSignatureRequest = request.Signature
+
+	// Additional Action for Approved Request
+	if request.Status == "APPROVED" {
+		var newSignatureRequest domain.Signature
 		if request.OverrideDescription {
 			newSignatureRequest.Description = request.NewDescription
+		} else {
+			newSignatureRequest.Description = request.Description
 		}
 		signature, err := service.signatureRepository.Create(newSignatureRequest)
 
@@ -154,9 +159,10 @@ func (service *signatureRequestService) ApproveOrReject(user_id int, request dom
 
 		mailPayload := utils.SignatureMailPayload{
 			QrCodeUrl:      signature.QrCodeUrl,
-			RequesterEmail: request.SignatureRequest.RequesterEmail,
-			RequesterName:  request.SignatureRequest.RequesterName,
+			RequesterEmail: result.RequesterEmail,
+			RequesterName:  result.RequesterName,
 		}
+
 		go utils.SendSignatureMail(mailPayload)
 		return domain.ServiceResponse{
 			Error: "",
@@ -166,6 +172,25 @@ func (service *signatureRequestService) ApproveOrReject(user_id int, request dom
 			CustomResponseMessage: "Successfully Approved a Signature Request and an E-mail with attached signature has been sent to signature's requester!",
 		}
 	}
+
+	// Update Request status
+	err = service.repository.UpdateStatus(request.SignatureRequest)
+	if err != nil {
+		return domain.ServiceResponse{
+			StatusCode: 500,
+			Error:      err.Error(),
+			Data:       map[string]interface{}{},
+		}
+	}
+
+	//Inform rejected via email to requester
+	mailPayload := utils.RejectedSignatureMailPayload{
+		RequesterEmail: request.RequesterEmail,
+		RequesterName:  request.RequesterName,
+		Description:    request.Description,
+	}
+	//Call with go routine to un-block request process
+	go utils.SendRejectedSignatureMail(mailPayload)
 
 	return domain.ServiceResponse{
 		Error:                 "",
