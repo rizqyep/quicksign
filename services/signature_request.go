@@ -146,6 +146,8 @@ func (service *signatureRequestService) ApproveOrReject(user_id int, request dom
 		} else {
 			newSignatureRequest.Description = result.Description
 		}
+		newSignatureRequest.RequestID = result.ID
+		newSignatureRequest.UserID = user_id
 		signature, err := service.signatureRepository.Create(newSignatureRequest)
 
 		if err != nil {
