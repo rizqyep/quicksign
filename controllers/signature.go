@@ -174,14 +174,6 @@ func (controller *signatureController) Delete(c *gin.Context) {
 	}
 	request.ID = id
 
-	isValid, errors := request.ValidateRequest()
-	if !isValid {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"validation_errors": errors,
-		})
-		return
-	}
-
 	result := controller.service.Delete(convertedUserID, request)
 
 	if result.Error != "" {
