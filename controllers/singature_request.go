@@ -41,6 +41,7 @@ func (controller *signatureRequestController) Create(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"validation_errors": errors,
 		})
+		return
 	}
 
 	result := controller.service.Create(request)
