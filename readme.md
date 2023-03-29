@@ -50,4 +50,4 @@ URL=http://localhost
 
 ## Endpoint Documentation
 
-You can access the documentation on this <a href="">Link</a>
+All Endpoint Documentations are available on this <a href="https://documenter.getpostman.com/view/23980877/2s93RRwDEZ">Postman Documentation Link</a>
