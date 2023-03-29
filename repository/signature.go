@@ -31,10 +31,16 @@ func (r *signatureRepository) Create(request domain.Signature) (domain.Signature
 	var result domain.Signature
 	request.SignatureToken = utils.RandStringRunes(64)
 	request.QrCodeUrl = utils.ConstructSignatureQRCode(request.SignatureToken)
+	var requestId interface{}
+	if request.RequestID == 0 {
+		requestId = nil
+	} else {
+		requestId = request.RequestID
+	}
 
 	sqlStatement := "INSERT INTO signatures (signature_token, qr_code_url, description, request_id, user_id) VALUES ($1, $2, $3 ,$4, $5) RETURNING id, signature_token, qr_code_url, description, COALESCE(request_id, 0) request_id, user_id, created_at, updated_at"
 
-	err := r.db.QueryRow(sqlStatement, &request.SignatureToken, &request.QrCodeUrl, &request.Description, nil, &request.UserID).Scan(&result.ID, &result.SignatureToken, &result.QrCodeUrl, &result.Description, &result.RequestID, &result.UserID, &result.CreatedAt, &result.UpdatedAt)
+	err := r.db.QueryRow(sqlStatement, &request.SignatureToken, &request.QrCodeUrl, &request.Description, requestId, &request.UserID).Scan(&result.ID, &result.SignatureToken, &result.QrCodeUrl, &result.Description, &result.RequestID, &result.UserID, &result.CreatedAt, &result.UpdatedAt)
 
 	if err != nil {
 		return domain.Signature{}, err
